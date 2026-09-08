@@ -9,31 +9,29 @@ A Chrome extension (a separate project) captures a product from any retailer
 page and posts it here. This app is where I search, filter, compare prices and
 decide what to actually buy.
 
-## The one idea
+## Items and listings
 
 An **item** is the object: "Panthella 250, Verner Panton, Louis Poulsen, 1971".
 A **listing** is one offer of that object on one site, with a price and a URL.
 One item has many listings.
 
-Everything follows from that. Colour and size sold are listing properties. The
-finish I actually want is an item property. A saved page is never the thing I
-collect.
+Colour and size sold are listing properties, and the finish I actually want is
+an item property. A saved page is never the thing I collect.
 
 An item carries two booleans and nothing else about my intent: `owned`, and
 `soon` for what I want next. No status enum, no priority, no categories.
 
-That is the result of stripping things back. There was a five-value status, a
-shortlist page with a running total, a priority integer, a category enum, a
-condition on every listing, and filters for price range and stock. Each was one
-more thing to maintain for a collection I look at with my own eyes. Two switches
-say enough.
+Earlier versions had a five-value status, a shortlist page with a running total,
+a priority integer, a category enum, a condition on every listing, and filters
+for price range and stock. Each was one more thing to maintain for a collection
+I look at with my own eyes, and two switches cover what I need.
 
 What survives in the filter bar: search, sort, designer, brand, Soon. Stock is a
-fact about one offer, so it shows per offer inside the item, not as a filter.
-The maker of an object is its `brand`.
+fact about one offer, so it shows per offer inside the item and not in the
+filter bar. The maker of an object is its `brand`.
 
-There are no item pages. Clicking an object opens it in a modal over the grid.
-The trade-off is that an individual object has no shareable URL.
+There are no item pages. Clicking an object opens it in a modal over the grid,
+which means an individual object has no shareable URL.
 
 ## Stack
 
@@ -70,8 +68,8 @@ it in the dashboard.
 
 `pnpm shot '[{"path":"/tmp/a.png","url":"http://localhost:3000/","width":390,"height":900,"scheme":"dark"}]'`
 drives Chrome over the DevTools protocol. It emulates the colour scheme properly
-and reports whether the page overflows its viewport, which plain
-`--screenshot` cannot tell you: it crops instead.
+and reports whether the page overflows its viewport, which plain `--screenshot`
+cannot tell you: it crops instead.
 
 ## Access model
 
@@ -83,9 +81,8 @@ under them. Everything else is closed. `notes` and `wanted_finish` are hidden
 with column grants, because RLS works on rows and this is a column problem. The
 `purchase` table has no anonymous grant at all.
 
-One consequence worth knowing before it bites you: `select *` on `item` fails as
-an anonymous reader. Public queries name their columns, from one constant in
-`lib/queries/items.ts`.
+One consequence: `select *` on `item` fails as an anonymous reader. Public
+queries name their columns, from one constant in `lib/queries/items.ts`.
 
 `pnpm verify:rls` drives the anonymous key at every table and fails the build if
 a single write gets through. Run it after any migration.
@@ -96,28 +93,28 @@ a single write gets through. Run it after any migration.
 matching algorithm are in [docs/api.md](docs/api.md). Read that file before
 touching the extension.
 
-The short version: re-capturing a known URL updates the listing and appends a
-price point only if the price moved. A new URL comes back with up to five
-candidate items ranked by name and designer similarity, and writes nothing until
-you re-post with an `item_id`. No match means a new item, filled in as well as
-the title allows, returned for editing.
+Re-capturing a known URL updates the listing and appends a price point only if
+the price moved. A new URL comes back with up to five candidate items ranked by
+name and designer similarity, and writes nothing until you re-post with an
+`item_id`. No match means a new item, filled in as well as the title allows,
+returned for editing.
 
-Captured images are downloaded into Supabase Storage. Retailer CDNs are never
-hotlinked.
+Captured images are downloaded into Supabase Storage, never hotlinked from the
+retailer.
 
 ## Currency
 
-Money is always integer minor units plus an ISO code. Never a float.
+Money is always integer minor units plus an ISO code, never a float.
 
 v1 does no conversion: `price_eur_cents` is filled only when the listing is
 already in EUR, and anything else sorts last. The `fx_rate` and `fx_rate_date`
-columns are there and empty, so adding real ECB rates later is code, not a
+columns are there and empty, so adding real ECB rates later takes code and no
 migration.
 
 ## Seed
 
-Ten pieces I actually track, with correct designers, brands and years.
-Seven have a real photo from Wikimedia Commons. The Panthella, the PH 5 and the
+Ten pieces I actually track, with correct designers, brands and years. Seven
+have a real photo from Wikimedia Commons. The Panthella, the PH 5 and the
 Montana Bit have none, so they seed without an image. That is on purpose: half
 the retailer captures in real life will fail to give me a usable photo, and I
 want to see what that looks like in the grid.

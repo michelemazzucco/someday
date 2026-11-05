@@ -51,7 +51,7 @@ export async function listItems(supabase: SupabaseClient, filters: Filters): Pro
   if (filters.soon) query = query.eq("soon", true);
 
   if (filters.q) {
-    const term = filters.q.replace(/[%,()]/g, " ");
+    const term = filters.q.replace(/[%,()"\\{}]/g, " ");
     query = query.or(
       `name.ilike.%${term}%,designer.ilike.%${term}%,brand.ilike.%${term}%,tags.cs.{${term.toLowerCase()}}`,
     );

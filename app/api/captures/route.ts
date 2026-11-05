@@ -208,7 +208,6 @@ async function createItemFromCapture(
       name: guess.name,
       designer: guess.designer,
       brand: guess.brand,
-      status: "watching",
     })
     .select(ITEM_OWNER_COLUMNS)
     .single()

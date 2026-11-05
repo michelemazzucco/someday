@@ -106,6 +106,10 @@ async function main() {
       return { error };
     });
 
+    await mustReturnRows("anon cannot list storage objects", 0, () =>
+      anon.storage.from("product-images").list("items", { limit: 1 }),
+    );
+
     await mustReturnRows("anon sees the public item", 1, () =>
       anon.from("item").select("id,name").eq("id", publicItem.id),
     );
